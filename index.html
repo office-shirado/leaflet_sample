@@ -1,0 +1,277 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+	<title>法務省地図 on Leaflet</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+	<!-- 【Leallet】 -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+
+	<!-- 　ベクトルタイル -->
+	<script src="https://unpkg.com/leaflet.vectorgrid@1.3.0/dist/Leaflet.VectorGrid.bundled.min.js"></script>
+
+
+	<!-- jQuery -->
+	<script src="plugin/jquery/jquery-2.1.1.min.js" type="text/javascript"></script>
+
+
+	<!-- jQuery UI -->
+	<script src="plugin/jquery-ui-1.10.3/jquery-ui.min.js" type="text/javascript"></script>
+	<link href="plugin/jquery-ui-1.10.3/jquery-ui.min.css" rel="stylesheet" type="text/css" />
+
+
+	<!-- コンテキストメニュー設定用 -->
+	<link rel="stylesheet" href="plugin/contextmenu/leaflet.contextmenu.css" />
+	<script src="plugin/contextmenu/leaflet.contextmenu.js" type="text/javascript"></script>
+
+
+	<!-- proj4leaflet -->
+	<script src="plugin/proj4leaflet/proj4-compressed.js" type="text/javascript"></script>
+	<script src="plugin/proj4leaflet/proj4leaflet.js" type="text/javascript"></script>
+
+
+	<!-- CRS設定（日本：世界測地系） -->
+	<script src="js/CRS_JGD2000.js" type="text/javascript"></script>
+
+
+	<!-- CRSエリア読込み（日本：世界測地系） -->
+	<script src="js/CRS_Area.js" type="text/javascript"></script>
+
+
+	<!-- ベクタースタイル -->
+	<script src="mymap/myVectorStyle.js" type="text/javascript"></script>
+
+
+	<!-- myButton設定用 -->
+	<script src="js/myButton.js" type="text/javascript"></script>
+	<link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+
+
+	<!-- 透過スライダー -->
+	<script src="js/myOpacitySlider.js" type="text/javascript"></script>
+
+
+	<!-- 現在地ロック設定-->
+	<script src="js/GNSS_Lock.js" type="text/javascript"></script>
+
+
+	<!-- MyMap -->
+
+	<!-- myContextmenu_Custom設定読込み -->
+	<script src="mymap/myContextmenu_Custom.js" type="text/javascript"></script>
+
+
+	<!-- マイマップ設定-->
+	<script src="mymap/myMap.js" type="text/javascript"></script>
+
+
+	<!-- 施設検索設定-->
+	<script src="mymap/iwaki.js" type="text/javascript"></script>
+
+
+	<!-- 背景タイル設定・オーバーレイタイル設定-->
+	<script src="mymap/baseMaps.js" type="text/javascript"></script>
+	<script src="mymap/airphoto.js" type="text/javascript"></script>
+
+
+	<!--- スタイルシート -->
+	<link rel="stylesheet" href="css/style.css" />		<!-- HTMLスタイル -->
+	<link rel="stylesheet" href="css/style-map.css" />	<!-- mapスタイル -->
+	<link rel="stylesheet" href="css/style-slider.css" />	<!-- 透過スライダースタイル -->
+	<link rel="stylesheet" href="css/style-info.css" />	<!-- infoスタイル -->
+	<link rel="stylesheet" href="css/style-switch.css" />	<!-- switchスタイル -->
+
+
+
+</head>
+
+<body>
+
+<!-- スライダーを表示する領域 -->
+<div id="slider_base"></div>
+<div id="slider"></div>
+
+
+<!-- マップを表示する領域 -->
+<div id="map">
+	<!-- センタークロス -->
+	<div id="cross">
+		<IMG id="_cross" src="img/cross.png" style="visibility:visilbe">
+	</div>
+
+	<!-- ＧＮＳＳスイッチ領域 -->
+	<div id="GNSS_ON" class="locateSwitch" style="visibility:visible">
+		現在地ロック
+		<br>
+		<form name="RealTimeGNSS">
+			<BUTTON type="button" id="GNSS_switch_ON" class="GNSS_switch" style="display:none" onClick="GNSS_Lock_OFF()">ON</BUTTON>
+			<BUTTON type="button" id="GNSS_switch_OFF" class="GNSS_switch" style="display:" onClick="GNSS_Lock_ON()">OFF</BUTTON>
+		</form>
+	</div>
+</div>
+
+
+<!-- 検索パネル領域 -->
+<div id="Panel_Search" class="panel" style="visibility:hidden">
+	<center>
+	<b>検　　索</b>
+	</center>
+	<hr>
+	<select id="sb1" name="select_01" class="select01" onChange="box2.make(this.value);"></select>
+	<br>
+	<select id="sb2" name="select_02" class="select01" onChange="goLink(this.value);"></select>
+</div>
+
+
+<!-- 設定パネル領域 -->
+<div id="Panel_Control" class="panel" style="visibility:hidden">
+	<center>
+	<b>設　　定</b>
+	</center>
+</div>
+
+
+<!-- ヘルプパネル領域 -->
+<div id="Panel_Help" class="panel" style="visibility:hidden">
+	<center>
+	<b>ヘ　ル　プ　</b>
+	</center>
+</div>
+
+
+
+
+
+<script>
+
+var map = L.map('map',{
+	center : homeLatLng,
+	zoom : homeZoomLev,
+	maxZoom : 23,
+	zoomControl: true,
+	contextmenu: false,	//コンテクストメニューオン時はスライダー不可
+//	contextmenu: true,
+	contextmenuWidth: 140,
+	contextmenuItems: ContextItem
+});
+
+</script>
+
+	<!-- スケールバー設定読込み -->
+	<script src="js/myScalebar.js" type="text/javascript"></script>
+
+
+	<!-- infoエリア設定読込み -->
+	<script src="js/myInfo.js" type="text/javascript"></script>
+
+
+	<!-- マップイベント読込み -->
+	<script src="js/mapEvent.js" type="text/javascript"></script>
+
+
+
+	<!-- MyMap -->
+
+	<!-- myButton設定読込み -->
+	<script src="mymap/myButton_Custom.js" type="text/javascript"></script>
+
+
+	<!-- makerOverlays設定読込み -->
+	<script src="mymap/makerOverlays.js" type="text/javascript"></script>
+
+
+	<!-- レイヤコントロール設定読込み -->
+	<script src="mymap/myLayerControl.js" type="text/javascript"></script>
+
+
+<script>
+
+	//ダブルクリックズーム無効
+	map.doubleClickZoom.disable();
+
+
+	//ホームボタン追加
+	button_Home.addTo(map);
+
+	//位置取得ボタン追加
+	button_Locate.addTo(map);
+
+	//マーカーＯＮ・ＯＦＦボタン追加
+	button_Maker_ON_OFF.addTo(map);
+
+	//検索パネル切替えボタン追加
+	button_Panel_Search_ON_OFF.addTo(map);
+
+
+	//スケールバー追加
+	myScalebar.addTo(map);
+
+
+	//info01追加
+	info01.addTo(map);
+
+	//info02追加
+	info02.addTo(map);
+
+
+	//レイヤコントロール01追加
+	LayerControl_01.addTo(map);
+
+	//レイヤコントロール02追加
+	LayerControl_02.addTo(map);
+
+</script>
+
+
+<script>
+	//初期タイル設定
+//	std.addTo(map);
+	pale.addTo(map);
+//	seamlessphoto.addTo(map);
+
+	L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg',
+	{attribution: "<br><a href='http://www.gsi.go.jp/' target='_blank'>国土地理院</a>：シームレス空中写真", maxZoom: 23, maxNativeZoom: 18, opacity: 0.5}).addTo(map);
+
+
+
+
+	//オフィス
+	officeLayer.addTo(map);
+	Office.openPopup();	//コメントポップアップ
+	document.getElementById("cross").style.visibility = "visible";	//最初のポップアップでもクロス表示
+
+
+	//行政機関
+	adminLayer.addTo(map);
+
+
+
+   <!-- 法務省地図 -->
+    L.vectorGrid.protobuf("https://x.optgeo.org/a/{z}/{x}/{y}.mvt", {
+      attribution: "<a href='https://www.moj.go.jp/MINJI/minji05_00494.html' target='_blank'>法務省地図</a>",
+      minZoom: 14,
+      maxZoom: 23,
+      minNativeZoom: 14,
+      maxNativeZoom: 16,
+      rendererFactory: L.canvas.tile,
+      vectorTileLayerStyles: {
+        "fude": {
+          color: "red",
+          weight: 0.2
+        }
+      }
+    }).addTo(map);
+
+
+
+
+
+
+</script>
+
+</body>
+</html>
+

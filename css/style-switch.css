@@ -1,0 +1,32 @@
+.locateSwitch {
+	padding: 6px 8px;
+	font: 14px Arial, Helvetica, sans-serif;
+	left: 10px;
+	bottom: 120px;
+	position: absolute;
+	z-index: 10;
+	opacity: 0.90;
+	background-color: rgb(255, 255, 255);
+	box-shadow: 0 0 15px rgba(0,0,0,0.4);
+	border-radius: 5px;
+	line-height: 1.6em;
+}
+
+.GNSS_switch {
+	padding: 6px 8px;
+	font: 16px Arial, Helvetica, sans-serif;
+	width: 85px;
+	height: 26px;
+	border-radius: 5px;
+	line-height: 1.6em;
+}
+
+#GNSS_switch_ON {
+	padding: 0px 0px;
+	background-color: rgb(255, 220, 220);
+}
+
+#GNSS_switch_OFF {
+	padding: 0px 0px;
+	background-color: rgb(220, 220, 220);
+}
